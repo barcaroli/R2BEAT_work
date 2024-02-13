@@ -1,0 +1,319 @@
+---
+title: "R2BEAT two-stage sampling design workflow starting from the sampling frame"  
+date: "`r Sys.Date()` <br>  <br> <br>"
+output: 
+  bookdown::html_document2:
+    df_print: kable
+    highlight: tango
+    number_sections: yes
+    theme: flatly
+    toc: yes
+    toc_depth: 2
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+    toc_title: 
+    # code_folding: hide
+keep_md: TRUE
+#bibliography: 
+#link-citations: yes
+#linkcolor: red
+vignette: >
+  %\VignetteIndexEntry{R2BEAT two-stage sampling design workflow starting from the sampling frame}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+```{r setup, include=FALSE}
+options(width=400) 
+knitr::opts_chunk$set(echo = TRUE, fig.width=6, fig.height=4)
+library(R2BEAT)
+options(warn=-1)
+options(scipen=9999)
+```
+
+This vignette describes a generalized procedure making use of the methods implemented in the R package developed in the Italian National Institute, namely R2BEAT ("Multistage Sampling Allocation and PSU selection").
+
+This package allows to determine the optimal allocation of both Primary Stage Units (PSUs) and Secondary Stage Units (SSU), and also to perform a selection of the PSUs such that the final sample of SSU is of the self-weighting type, i.e. the total inclusion probabilities (as resulting from the product between the inclusion probabilities of the PSUs and those of the SSUs) are near equal for all SSUs, or at least those of minimum variability.
+
+This general flow assumes that a sampling frame is available, containing, among the others, the following variables:
+
+- identifier of the Primary Sampling Units;
+- identifier of the Secondary Sampling Units;
+- variables identifying the sampling strata;
+- target variables, i.e. the variables from which sampling estimates will be produced.
+
+As for the last type of variables, of course their direct availability is not possible: instead, proxy variables will be present in the sampling frame, or the same variables with predicted values.
+
+Having this sampling frame, the workflow is based on the following steps:
+
+1. Loading data and pre-processing
+2. Producing the inputs for next steps (with a fine tuning of parameters)
+3. Optimal allocation of SSUs in PSUs
+4. Selection of PSUs
+5. Selection of SSUs
+
+# Loading data and pre-processing
+
+We make use of a synthetic population data frame (pop), that is available at the link:
+
+https://github.com/barcaroli/R2BEAT/tree/master/data
+
+```{r}
+load("pop.RData")   
+str(pop)
+```
+
+Great attention must be paid to the nature of the target variables, especially of the 'factor' type.
+In fact, the procedure here illustrated is suitable only when categorical variables are binary with values 0 and 1, supposing we are willing to estimate proportions of '1' in the population.
+If factor variables are of other nature, then an error message is printed.
+Therefore, we have to handle the 'work' variable in this way: as values 0, 1 and 2 indicate respectively non labour force, active and inactive people, this is why we derived from 'work' the two binary variables, 'active' and 'inactive'.
+
+# Producing the inputs for next steps
+
+To prepare the inputs for the optimal allocation and selection of primary and secondary sampling units, the function 'prepareInputToAllocation1' is available.
+
+For the execution of this function, it is necessary to assign values to the different parameters. Some of them can be directly derived by available data, but for others, namely 'minimum' (minimum number of SSUs to be interviewed in each selected PSU) the indication of the values is more difficult, without having any reference.
+
+In order to orientate in the choice of the value to give to 'minimum', the function 'sensitivity_min_SSU' allows to perform a sensitivity analysis for this parameter.
+
+To execute this function, the name of the parameter has to be given, together with the minimum and maximum value. On the basis of these minimum and maximum values, 10 different values will be used for carrying out the allocation. The output will be a graphical one. 
+
+This function requires also the definition of the precision constraints on the target values:
+
+
+```{r}
+cv <- as.data.frame(list(DOM=c("DOM1","DOM2"),
+                         CV1=c(0.02,0.03),
+                         CV2=c(0.03,0.06),
+                         CV3=c(0.03,0.06),
+                         CV4=c(0.05,0.08)))
+cv
+```
+
+The meaning of these constraints is that, once we select a sample and produce extimates, we expect a maximum coefficient of variation for the first variable ('income_hh') equal to 3\% at national level ('DOM1') and to 4\% at regional level ('DOM2'); respectively 6\% and 8\% for the other three variables.
+
+We can analyze the results in terms of first stage and second stage sizes by executing the following code:
+
+```{r, eval=TRUE,results='hide'}
+sens_min_SSU <- sensitivity_min_SSU(
+             samp_frame=pop,
+             errors=cv,
+             id_PSU="municipality",
+             id_SSU="id_ind",
+             strata_var="stratum",
+             target_vars=c("income_hh","active","inactive","unemployed"),
+             deff_var="stratum",
+             domain_var="region",
+             delta=1,
+             deff_sugg=1,
+             min=30,
+             max=80,
+             plot=TRUE)
+```
+
+By analysing the above graph we can decide which values are the most suitable for the sample design.
+
+We therefore assign the following values to the required parameters:
+
+```{r}
+samp_frame <- pop
+id_PSU <- "municipality"  # only one
+id_SSU <- "id_ind"        # only one
+strata_var <- "stratum"   # only one
+target_vars <- c("income_hh","active","inactive","unemployed")   # more than one
+deff_var <- "stratum"     # only one
+domain_var <- "region"    # only one
+minimum <- 25     # minimum number of SSUs to be interviewed in each selected PSU
+delta =  1        # average dimension of the SSU in terms of elementary survey units
+deff_sugg <- 1.5  # suggestion for the deff value
+```
+
+
+With already assigned parameters, we can execute the 'prepareInputToAllocation1' function:
+
+```{r, results='hide'}
+inp <- prepareInputToAllocation1(samp_frame,
+                                id_PSU,
+                                id_SSU,
+                                strata_var,
+                                target_vars,
+                                deff_var,
+                                domain_var,
+                                minimum,
+                                delta,
+                                deff_sugg)
+```
+
+The function 'prepareInputToAllocation1' produces a list composed by six elements, stored in the 'inp' object:
+
+a) the 'stratif' dataframe containing:
+
+ - STRATUM: identifier of the single stratum
+ - N: total population in terms of final sampling units
+ - Mi,Si: mean and standard deviation of target variables (i=1,2,..,P) 
+ - DOMk: domain(s) to which the stratum belongs
+ 
+b) the 'deff' (design effect) dataframe, containing the following information:
+
+  - STRATUM: the stratum identifier
+  - DEFFi: the design effect for each target variable i (i=1,2,...,P)
+
+ 
+c) the 'effst' (estimator effect) dataframe, containing the following information:
+
+  - STRATUM: the stratum identifier
+  - EFFSTi: the estimator effect for each target variable i (i=1,2,...,P)
+
+d) the 'rho' (intraclass coefficient of correlation) dataframe, containing the following information:
+
+  - STRATUM: the stratum identifier
+  - RHO_ARi: the intraclass coefficient of correlation in self-representative PSUs for each target variable i (i=1,2,...,P)
+  - RHO_NARi: the intraclass coefficient of correlation in non self-representative PSUs for each target variable i (i=1,2,...,P)
+  
+e) the 'des_file' dataframe, containing the following information:
+
+  - STRATUM: stratum identifier
+  - MOS: measure of size of the stratum (in terms of number of contained selection units)
+  - DELTA: factor that report the average number of SSUs for each selection unit 
+  - MINIMUM: minimum number of units to be selected in each PSU
+
+f) the 'PSU_file' dataframe, containing the following information:
+
+  - stratum identifier
+  - PSU id
+  - PSU_MOS: number of final selection units contained in a given PSU  
+
+(Actually, the 'deff' dataframe is not used in the following steps, it just remains for documentation purposes.)
+
+Let us see the content of these objects:
+
+```{r}
+head(inp$strata)
+```
+
+```{r}
+inp$deff
+```
+
+```{r}
+inp$effst
+```
+
+```{r}
+inp$rho
+```
+
+```{r}
+inp$des_file
+```
+
+```{r}
+head(inp$psu_file)
+```
+
+It may happen that the population in strata (variable 'N' in 'inp\$strata' dataset) and the one derived by the PSU dataset (variable 'STRAT_MOS' in 'inp\$des_file' dataset) are not the same.
+
+We can check it by applying the function 'check_input' in this way:
+
+```{r}
+newstrata <- check_input(strata=inp$strata,
+                         des=inp$des_file,
+                         strata_var_strata="STRATUM",
+                         strata_var_des="STRATUM")
+```
+
+# Optimal allocation
+
+Using the function 'beat.2st' in 'R2BEAT' package we can perform the optimization of PSU and SSU allocation in strata:
+
+```{r}
+inp$des_file$MINIMUM <- 25
+minPSUstrat = 2
+alloc <- beat.2st(stratif = inp$strata, 
+                  errors = cv, 
+                  des_file = inp$des_file, 
+                  psu_file = inp$psu_file, 
+                  rho = inp$rho, 
+                  deft_start = NULL, 
+                  effst = inp$effst, 
+                  minPSUstrat,
+                  minnumstrat = 2)
+```
+
+This is the sensitivity of the solution:
+
+```{r}
+alloc$sensitivity
+```
+
+i.e., for each domain value and for each variable it is reported the gain in terms of reduction in the sample size if the corresponding precision constraint is reduced of 10\%.
+
+These are the expected values of the coefficients of variation:
+
+```{r}
+alloc$expected
+```
+
+
+# Selection of PSUs
+
+Using the function 'select_PSU' execute the selection of PSU in strata:
+
+```{r}
+set.seed(1234)
+sample_1st <- select_PSU(alloc, type="ALLOC", pps=TRUE)
+```
+
+This is the overall sample design:
+
+```{r}
+sample_1st$PSU_stats
+```
+
+
+# Selection of SSUs
+
+Finally, we are able to select the Secondary Sample Units (the individuals) from the already selected PSUs (the municipalities). 
+We proceed to select the sample in this way:
+
+```{r}
+samp <- select_SSU(df=pop,
+                   PSU_code="municipality",
+                   SSU_code="id_ind",
+                   PSU_sampled=sample_1st$sample_PSU)
+```
+
+To check that the total amount of selected units with respect to the initial allocation:
+
+```{r}
+nrow(samp)
+sum(alloc$alloc$ALLOC[-nrow(alloc$alloc)])
+```
+
+The difference is due to the fact that the constraint on the minimum number of SSUs to be selected for PSU has been enforced, thus resulting in an increase of the SSUs with respect to the optimal allocation.
+
+We check also that the sum of weights equalizes the population size:
+
+```{r}
+nrow(pop)
+sum(samp$weight)
+```
+This is the distribution of weights:
+
+```{r}
+boxplot(samp$weight,col="orange")
+title("Weights distribution (total sample)",cex.main=0.7)
+boxplot(weight ~ region, data=samp,col="orange")
+title("Weights distribution by region",cex.main=0.7)
+boxplot(weight ~ province, data=samp,col="orange")
+title("Weights distribution by province",cex.main=0.7)
+boxplot(weight ~ stratum, data=samp,col="orange")
+title("Weights distribution by stratum",cex.main=0.7)
+```
+
+
+
+
