@@ -7,6 +7,7 @@ Depends: R (>= 3.5.0), sampling, glue, methods, parallel, foreach, doParallel
 Suggests: knitr, rmarkdown, bookdown, ReGenesees
 Remotes:
   DiegoZardetto/ReGenesees
+Author: Andrea Fasulo,Giulio Barcaroli,Ilaria Bombelli,Stefano Falorsi,Alessio Guandalini,Marco Dionisio Terribili 
 Authors@R: c(person("Andrea", "Fasulo", role = c("aut", "cre"),
                      email = "fasulo@istat.it"),
               person("Giulio", "Barcaroli", role = "aut"),
@@ -14,8 +15,10 @@ Authors@R: c(person("Andrea", "Fasulo", role = c("aut", "cre"),
                      email = "stfalors@istat.it"),
               person("Alessio", "Guandalini", role = "aut",
                      email = "alessio.guandalini@istat.it"),
-              person("Daniela", "Pagliuca", role = "aut"), 
-              person("Marco Dionisio","Terribili", role = "aut")
+              person("Ilaria", "Bombelli", role = "aut",
+					email="ilaria.bombelli@istat.it"), 
+              person("Marco Dionisio","Terribili", role = "aut",
+					email="marco.terribili@istat.it")
               )
 Maintainer: Andrea Fasulo <fasulo@istat.it>
 License: EUPL
