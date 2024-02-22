@@ -25,9 +25,6 @@
 #' strata$CENS <- as.numeric(strata$CENS)
 #' strata$COST <- as.numeric(strata$COST)
 #' strata$CENS <- 0
-#' strata$DOM1 <- "National"
-#' strata$DOM2 <- ifelse(strata$DOM2 == 1,"North",
-#'                       ifelse(strata$DOM2 == 2,"Center","South"))
 #' cv <- as.data.frame(list(DOM = c("DOM1","DOM2"),
 #'                          CV1 = c(0.05,0.10),
 #'                          CV2 = c(0.05,0.10),
