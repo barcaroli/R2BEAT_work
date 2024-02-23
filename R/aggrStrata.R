@@ -1,3 +1,25 @@
+#' aggrStrata
+#'  
+#' @description
+#' Function to aggregate the information from a set of strata 
+#' 
+#' @details
+#' Be aware that this function is applicable only to strata of a same domain level
+#' 
+#' @param strata name of the dataframe containing the strata to be aggregated.
+#' @param nvar number of target variables Y
+#' @param vett vector of integers of the same length of the dimension of the 'strata' dataframe indicating how the strata must be aggregated.
+#' @param censiti flag indicating if the strata are take-all (=1) or not (=0)
+#' @param dominio variable in the strata indicating the domain level
+#' 
+#' @return a dataframe containing the aggregated strata
+#' 
+#' @examples
+#' data(beat.example)
+#' vett <- c(rep(1,5),rep(2,5),rep(3,7))
+#' R2BEAT:::aggrStrata(strata,vett,nvar=2,dominio="DOM1",censiti=0)
+
+
 aggrStrata <- function(strata, 
                        nvar, 
                        vett, 
@@ -61,14 +83,6 @@ aggrStrata <- function(strata,
                      string9, string8, "'N')],by=list(strwrk$gruppo),FUN=sum)", 
                      sep = "")
   eval(parse(text = statement))
-  # for (k1 in varloop) {
-  #     statement <- paste("M", k1, " <- round((strwrkagg$TM", 
-  #         k1, " / strwrkagg$N),digits=9)", sep = "")
-  #     eval(parse(text = statement))
-  #     statement <- paste("S", k1, " <- round(sqrt((1/strwrkagg$N)*(strwrkagg$TVAR", 
-  #         k1, " + strwrkagg$diff", k1, ")),digits=9)", sep = "")
-  #     eval(parse(text = statement))
-  # }
   for (k1 in varloop) {
     statement <- paste("M", k1, " <- (strwrkagg$TM", 
                        k1, " / strwrkagg$N)", sep = "")
