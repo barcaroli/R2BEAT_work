@@ -46,7 +46,7 @@ expected_CV <- function (strata,alloc_variable,errors)
   for (d in c(1:ndom)) {
     eval(parse(text=paste0("vett <- strata$DOM",d)))
     vett <-as.integer(factor(as.character(vett)))
-    strata2 <- aggrStrata(strata,nvars,vett,dominio=1,censiti="CENS")
+    strata2 <- aggrStrata(strata,nvars,vett,dominio=1,censiti=0)
     eval(parse(text=paste0("strata2$",alloc_variable," <- tapply(strata$",alloc_variable,",vett,FUN=sum)")))
     M_h <- S_h <- NULL
     for (i in (1:nrow(strata2))) {
