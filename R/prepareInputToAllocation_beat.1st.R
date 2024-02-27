@@ -420,6 +420,10 @@ prepareInputToAllocation_beat.1st <- function (samp_frame, ID, stratum, dom,  ta
     colnames(stratif)[pos] <- stratum
   }
   
+  stratif$CENS <- as.numeric(stratif$CENS)
+  stratif$CENS <- 0
+  stratif$COST <- as.numeric(stratif$COST)
+  
   
   
  
