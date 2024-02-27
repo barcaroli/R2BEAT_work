@@ -32,6 +32,16 @@ adjust_CVs <- function(target_size,strata,errors) {
       if (sum(b$alloc$ALLOC[-nrow(b$alloc)]) > target_size) break
     } 
   }
+  if (size >= target_size) {
+    repeat {
+      for (k in c(2:ncol(cvnew))) {
+        cvnew[,k] <- cvnew[,k] + 0.01*cvnew[,k]
+      }
+      b <- beat.1st(stratif=strata,errors=cvnew)
+      # cat("\n Size: ",sum(b$alloc$ALLOC[-nrow(b$alloc)]))
+      if (sum(b$alloc$ALLOC[-nrow(b$alloc)]) < target_size) break
+    } 
+  }
   cat("\n Size: ",sum(b$alloc$ALLOC[-nrow(b$alloc)]))
   return(cvnew)
 }
