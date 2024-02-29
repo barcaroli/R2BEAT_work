@@ -21,7 +21,7 @@
 #' errors[1,c(2:3)] <- c(0.03,0.03)
 #' errors[2,c(2:3)] <- c(0.03,0.03)
 #' errors
-#' cv <- cvs_hint(strata,errors)
+#' cv <- CVs_hint(strata,errors)
 #' cv
 CVs_hint <- function(strata,cv) {
   ndom <- length(grep("DOM",colnames(strata)))
