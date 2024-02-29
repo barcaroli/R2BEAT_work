@@ -18,14 +18,12 @@
 #' 
 #' @examples
 #' data(beat.example)
-#' errors
-#' data(beat.example)
-#' strata
 #' errors[1,c(2:3)] <- c(0.03,0.03)
 #' errors[2,c(2:3)] <- c(0.03,0.03)
+#' errors
 #' cv <- cvs_hint(strata,errors)
 #' cv
-cvs_hint <- function(strata,cv) {
+CVs_hint <- function(strata,cv) {
   ndom <- length(grep("DOM",colnames(strata)))
   nvar <- ncol(cv) - 1
   S <- paste0("S",c(1:nvar))
