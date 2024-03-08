@@ -5,7 +5,7 @@
 #' @param alloc: A vector with an allocation into strata.
 #' @param minnumstrat: Optional. A number indicating the lower bound for the number of allocated units in each stratum (default is 2).
 #' @return A dataframe with planned and actual CV for each combination of domain, domain category and auxiliary variable.
-beat.1cv <- function(stratif, errors,alloc, minnumstrat = 2) 
+beat.1cv.old <- function(stratif, errors,alloc, minnumstrat = 2) 
 {
 
   
