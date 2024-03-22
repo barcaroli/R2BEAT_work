@@ -133,13 +133,20 @@ beat.1st <- function (stratif, errors, minnumstrat = 2, maxiter = 200, maxiter1 
   num_strati <- length(N)
   sampleSize <- sum(n)
   popSize <- sum(N)
-  uguale = rep(sampleSize/num_strati, num_strati)
+  sampleSize_nocens <- sum(n[which(stratif$CENS==0)])
+  popSize_nocens <- sum(N[which(stratif$CENS==0)])
+  #originale
+  #uguale = rep(sampleSize/num_strati, num_strati)
+  uguale <- ifelse(cens==0, sampleSize_nocens/sum(stratif$CENS==0), N)
+  proporzionale = ifelse(cens==0, sampleSize_nocens * N/popSize_nocens, N)
   Bethel_sample <- cbind(stratif, n)
   colnames(Bethel_sample)[length(colnames(Bethel_sample))] <- "n"
   nomi <- c("STRATUM", "ALLOC", "PROP", "EQUAL")
   df = NULL
-  df <- cbind(df, as.character(stratif$STRATUM), n, sampleSize * 
-                N/popSize, uguale)
+  #originale
+  #df <- cbind(df, as.character(stratif$STRATUM), n, sampleSize * 
+   #             N/popSize, uguale)
+  df <- cbind(df, as.character(stratif$STRATUM), n, proporzionale, uguale)
   tot <- apply(matrix(as.numeric(df[, 2:4]), ncol = 3), 2, 
                sum)
   df <- rbind(df, c("Total", tot))
