@@ -1,6 +1,25 @@
 
 <!-- NEWS.md is generated from NEWS.Rmd. Please edit NEWS.Rmd file -->
 
+# R2BEAT 1.0.6
+
+## Major changes
+
+- Added the function ‘prepareInputToAllocation_beat.1st’ that generates
+  the ‘strata’ dataframe as input for the Bethel allocation (one stage)
+
+- Added the function ‘CVs_hint’ that suggests new values for the
+  precision constraints, depending on the variability of the target
+  variables in the strata
+
+- Added the function ‘sens_names’ to better identify domain and
+  variables in the sensitivity output
+
+- Added the function ‘expected_CV’ to calculate the expected CVs given
+  the allocation in the strata
+
+- Fixed bugs (calculation of expected CVs)
+
 # R2BEAT 1.0.5
 
 ## Major changes
