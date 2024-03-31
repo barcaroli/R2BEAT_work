@@ -69,5 +69,16 @@ expected_CV <- function (strata,alloc_variable,errors)
     # cv <- round(cv, 7)
     # print(exp_cv)
   }
-  return(exp_cv)
+    cv_columns <- grep("cv", names(exp_cv), value = TRUE)
+  split_data <- split(exp_cv, exp_cv$DOM)
+  calculate_max <- function(data_list) {
+    sapply(cv_columns, function(column_name) {
+      max(data_list[[column_name]], na.rm = TRUE)
+    })
+  }
+  max_values <- lapply(split_data, calculate_max)
+  max_values <- lapply(max_values,function(x) round(x,4))
+  max_values_df <- do.call(rbind, max_values)
+  row.names(max_values_df) <- unique(exp_cv$DOM)
+  return(max_values_df)
 }
