@@ -30,8 +30,9 @@
 #' allocation <- beat.1st(strata,cv)
 #' 
 #' alloc <- allocation$alloc$ALLOC[-nrow(allocation$alloc)]
-#' exp_cv <- expected_CV(strata,cv,alloc,)
+#' exp_cv <- expected_CV(strata,cv,alloc)
 #' exp_cv
+#' 
 
 
 expected_CV <- function(strata,errors,alloc) {

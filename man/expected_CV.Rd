@@ -39,6 +39,7 @@ cv <- as.data.frame(list(DOM = c("DOM1","DOM2"),
 allocation <- beat.1st(strata,cv)
 
 alloc <- allocation$alloc$ALLOC[-nrow(allocation$alloc)]
-exp_cv <- expected_CV(strata,cv,alloc,)
+exp_cv <- expected_CV(strata,cv,alloc)
 exp_cv
+
 }
