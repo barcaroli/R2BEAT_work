@@ -172,13 +172,6 @@ beat.1st <- function (stratif, errors, minnumstrat = 2, maxiter = 200, maxiter1 
   
   #create the dataframe to be returned as output
   CVfin <- calcola_cv()
-  # 
-  # for (j in varloop) {
-  #   NTOT[j] <- sum((m[, j] > 0) * N)
-  # }
-  # varfin = rowSums(t((s * N)^2 * (1 - round(n)/N)/round(n))/NTOT^2)
-  # totm = rowSums(t(m * N))
-  # CVfin <- round(sqrt(varfin/(totm/NTOT)^2), digits = 4)
   g <- 0
   for (i in strloop) {
     t <- 0
