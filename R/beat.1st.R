@@ -135,98 +135,43 @@ beat.1st <- function (stratif, errors, minnumstrat = 2, maxiter = 200, maxiter1 
   popSize <- sum(N)
   sampleSize_nocens <- sum(n[which(stratif$CENS==0)])
   popSize_nocens <- sum(N[which(stratif$CENS==0)])
-  #originale
-  #uguale = rep(sampleSize/num_strati, num_strati)
   uguale <- ifelse(cens==0, sampleSize_nocens/sum(stratif$CENS==0), N)
   proporzionale = ifelse(cens==0, sampleSize_nocens * N/popSize_nocens, N)
   Bethel_sample <- cbind(stratif, n)
   colnames(Bethel_sample)[length(colnames(Bethel_sample))] <- "n"
   nomi <- c("STRATUM", "ALLOC", "PROP", "EQUAL")
   df = NULL
-  #originale
-  #df <- cbind(df, as.character(stratif$STRATUM), n, sampleSize * 
-   #             N/popSize, uguale)
   df <- cbind(df, as.character(stratif$STRATUM), n, proporzionale, uguale)
   tot <- apply(matrix(as.numeric(df[, 2:4]), ncol = 3), 2, 
                sum)
   df <- rbind(df, c("Total", tot))
   colnames(df) <- nomi
-  #originale: 
-  # for (j in varloop) {
-  #   NTOT[j] <- sum((m[, j] > 0) * N)
-  # }
-  # varfin = rowSums(t((s * N)^2 * (1 - round(n)/N)/round(n))/NTOT^2)
-  # totm = rowSums(t(m * N))
-  # CVfin <- round(sqrt(varfin/(totm/NTOT)^2), digits = 4)
-  #nuovo: 
   calcola_cv <- function() {
     
+    NTOT <- c(rep(0, nvar))
+    CVfin <- c(rep(0, nvar))
     #
     # -------------------------------------------------------------
     # Populations in strata for different domains of interest
     # NTOTj
     # -------------------------------------------------------------
     NTOT <- colSums((m > 0) * N)
-    # NTOT is a row-vector of dimension equal to the number of column of m (or s)
-    # with the total number of population units in each domain
-    NTOT_all=m
-    NTOT_all=t(apply(NTOT_all, 1, function(x) x=t(as.numeric(x>0)*NTOT)))
-    
-    # NTOT_all is a matrix with the same dimension as m: 
-    #1) NTOT_all has been inizialed as equal to m 
-    #2) Then in each column j, the non-null value will be filled up with  
-    #the j-the element of vector NTOT
     #
-    # -------------------------------------------------------------
-    # Sampled population in strata for different domains of interest
-    # allocTOTj
-    # -------------------------------------------------------------
-    allocTOT=colSums((m > 0) * round(n))
-    # allocTOT is a row-vector of dimension equal to the number of column of m (or s)
-    # with the total number of sampled units in each domain
-    #
-    
     # ------------------------------------------------------------
     # Computation of the CVs
     # ------------------------------------------------------------
-    #
-    # ------------------------------------------------------------
-    # Total
-    # ------------------------------------------------------------ 
+    varfin <- rowSums(t((s * N)^2 * (1 - round(n)/N)/round(n))/NTOT^2)
     totm <- rowSums(t(m * N))
-    # row-vector of dimension equal to the number of column of m (or s)
-    # with the total (mean*number of pop units) in each domain 
-    totm_all=m
-    totm_all=t(apply(totm_all, 1, function(x) x=t(as.numeric(x>0)*t(totm))))
-    # totm_all is a matrix with the same dimension as m: 
-    #1) totm_all has been inizialed as equal to m 
-    #2) Then in each column j, the non-null value will be filled up with  
-    #the j-the element of vector totm
     
-    # ------------------------------------------------------------
-    # Variance
-    # ------------------------------------------------------------ 
-    var=s^2*(N-1)
-    #correction factor
-    diff=N*((1/N)*(m*N) - totm_all/NTOT_all)^2
-    diff[is.na(diff)]=0
-    var2=sqrt((colSums(var)+colSums(diff))/NTOT) 
-    varfin= var2^2*((1 - allocTOT/NTOT)*1/(allocTOT))
-    
-    # ------------------------------------------------------------
-    # CV
-    # ------------------------------------------------------------ 
-    
-    CVfin <- sqrt(varfin/(totm/NTOT)^2)
-    #sd/mean
+    CVfin <- round(sqrt(varfin/(totm/NTOT)^2), digits = 4)
     return(CVfin)
   }
   
   # -----------------------------------------------------------
   
+  
+  #create the dataframe to be returned as output
   CVfin <- calcola_cv()
-  
-  
   g <- 0
   for (i in strloop) {
     t <- 0
