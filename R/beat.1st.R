@@ -141,9 +141,6 @@ beat.1st <- function (stratif, errors, minnumstrat = 2, maxiter = 200, maxiter1 
   colnames(Bethel_sample)[length(colnames(Bethel_sample))] <- "n"
   nomi <- c("STRATUM", "ALLOC", "PROP", "EQUAL")
   df = NULL
-  #originale
-  #df <- cbind(df, as.character(stratif$STRATUM), n, sampleSize * 
-  #             N/popSize, uguale)
   df <- cbind(df, as.character(stratif$STRATUM), n, proporzionale, uguale)
   tot <- apply(matrix(as.numeric(df[, 2:4]), ncol = 3), 2, 
                sum)
